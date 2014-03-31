@@ -84,3 +84,16 @@ void tree_node_dec(struct tree_node *node) {
     node->child = NULL; // in case of dangling refs
     free(node);
 }
+
+bool tree_node_cmp(struct tree_node *n, struct tree_node *m) {
+    if(n->type != m->type) return false;
+    if(n->child_count != m->child_count) return false;
+    if(!!n->name != !!m->name) return false;
+    if(n->name && strcmp(n->name, m->name)) return false;
+
+    for(int i = 0; i < n->child_count; i ++) {
+        if(!tree_node_cmp(n->child[i], m->child[i])) return false;
+    }
+
+    return true;
+}

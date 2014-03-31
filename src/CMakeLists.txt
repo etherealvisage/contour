@@ -8,6 +8,7 @@ aux_source_directory(. dotSources)
 aux_source_directory(config configSources)
 aux_source_directory(log logSources)
 aux_source_directory(parser parserSources)
+aux_source_directory(prover proverSources)
 aux_source_directory(str strSources)
 aux_source_directory(tree treeSources)
 
@@ -16,6 +17,7 @@ set(commonSources
     ${configSources}
     ${logSources}
     ${parserSources}
+    ${proverSources}
     ${strSources}
     ${treeSources}
 )
