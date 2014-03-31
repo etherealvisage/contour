@@ -55,9 +55,6 @@ static struct tree_node *parse_helper(struct lex_state *state) {
     if(lex_match(state, '(')) {
         // negation?
         if(lex_match(state, '~')) {
-            // skip the '('
-            lex_expect(state, '(');
-
             ret->type = TREE_NODE_NEGATION;
             ret->child = malloc(sizeof(struct tree_node *));
             ret->child_count = 1;
@@ -97,8 +94,8 @@ static struct tree_node *parse_helper(struct lex_state *state) {
             
             // what's the type?
             if(lex_match(state, '&')) ret->type = TREE_NODE_CONJUNCTION;
-            else if(lex_match(state, '|')) ret->type = TREE_NODE_CONJUNCTION;
-            else if(lex_match(state, '>')) ret->type = TREE_NODE_CONJUNCTION;
+            else if(lex_match(state, '|')) ret->type = TREE_NODE_DISJUNCTION;
+            else if(lex_match(state, '>')) ret->type = TREE_NODE_IMPLICATION;
             else {
                 contour_log_error("Unknown logical connective %c",
                     lex_peek(state));

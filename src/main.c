@@ -6,7 +6,7 @@
 int main(int argc, char *argv[]) {
     contour_log_info("Initializing.");
 
-    struct tree_node *test_parse = parse("(A>B)");
+    struct tree_node *test_parse = parse("(((A>B)&(~B))>(~A))");
 
     char buffer[1024];
     tree_node_dump(buffer, test_parse);
