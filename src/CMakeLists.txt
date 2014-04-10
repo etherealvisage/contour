@@ -1,4 +1,4 @@
-add_definitions(-Wextra -Wall -ansi -pedantic -std=c99)
+add_definitions(-Wextra -Wall -ansi -pedantic -std=c99 -Wno-c++-compat)
 add_definitions(-g -O2)
 add_definitions(-D_GNU_SOURCE)
 

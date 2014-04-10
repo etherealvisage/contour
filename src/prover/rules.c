@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "rules.h"
 #include "util.h"
 
@@ -19,6 +21,16 @@ static bool is_rule_axiom(struct proof_sequent *sequent, int index);
 static struct prover_rule_result rule_conj_l(struct proof_sequent *sequent,
     int which);
 static bool is_rule_conj_l(struct proof_sequent *sequent, int index);
+// disjunction, left
+static struct prover_rule_result rule_disj_l(struct proof_sequent *sequent,
+    int which);
+static bool is_rule_disj_l(struct proof_sequent *sequent, int index);
+// disjunction (left/right disjunct), right
+static struct prover_rule_result rule_disjl_r(struct proof_sequent *sequent,
+    int which);
+static struct prover_rule_result rule_disjr_r(struct proof_sequent *sequent,
+    int which);
+static bool is_rule_disj_r(struct proof_sequent *sequent);
 // implication, right
 static struct prover_rule_result rule_impl_r(struct proof_sequent *sequent,
     int which);
@@ -26,10 +38,13 @@ static bool is_rule_impl_r(struct proof_sequent *sequent);
 
 struct lrule lrules[] = {
     {rule_axiom, is_rule_axiom},
-    {rule_conj_l, is_rule_conj_l}
+    {rule_conj_l, is_rule_conj_l},
+    {rule_disj_l, is_rule_disj_l}
 };
 
 struct rrule rrules[] = {
+    {rule_disjl_r, is_rule_disj_r},
+    {rule_disjr_r, is_rule_disj_r},
     {rule_impl_r, is_rule_impl_r}
 };
 
@@ -110,6 +125,93 @@ static bool is_rule_conj_l(struct proof_sequent *sequent, int index) {
     return sequent->left[index]->type == TREE_NODE_CONJUNCTION;
 }
 
+// disjunction, left
+static struct prover_rule_result rule_disj_l(struct proof_sequent *sequent,
+    int which) {
+
+    struct proof_sequent *lseq = zalloc(sizeof(*lseq));
+    struct proof_sequent *rseq = zalloc(sizeof(*rseq));
+
+    lseq->right = sequent->right;
+    tree_node_inc(lseq->right);
+    rseq->right = sequent->right;
+    tree_node_inc(rseq->right);
+
+    lseq->left_count = sequent->left_count;
+    lseq->left = zalloc(sizeof(*lseq->left) * lseq->left_count);
+    rseq->left_count = sequent->left_count;
+    rseq->left = zalloc(sizeof(*lseq->left) * lseq->left_count);
+
+    for(int i = 0; i < sequent->left_count; i ++) {
+        if(i != which) {
+            lseq->left[i] = sequent->left[i];
+            tree_node_inc(lseq->left[i]);
+            rseq->left[i] = sequent->left[i];
+            tree_node_inc(rseq->left[i]);
+        }
+        else {
+            // add left child in place
+            lseq->left[i] = sequent->left[i]->child[0];
+            tree_node_inc(lseq->left[i]);
+            rseq->left[i] = sequent->left[i]->child[0];
+            tree_node_inc(rseq->left[i]);
+        }
+    }
+
+    return (struct prover_rule_result){lseq, rseq};
+}
+
+static bool is_rule_disj_l(struct proof_sequent *sequent, int index) {
+    return sequent->left[index]->type == TREE_NODE_DISJUNCTION;
+}
+
+// disjunction (left disjunct), right
+static struct prover_rule_result rule_disjl_r(struct proof_sequent *sequent,
+    int __attribute__((unused)) which) {
+
+    struct proof_sequent *nseq = zalloc(sizeof(*nseq));
+
+    nseq->right = sequent->right->child[0];
+    tree_node_inc(nseq->right);
+
+    nseq->left_count = sequent->left_count;
+    nseq->left = zalloc(sizeof(*nseq->left) * nseq->left_count);
+
+    // copy old sequent left children over
+    for(int i = 0; i < sequent->left_count; i ++) {
+        nseq->left[i] = sequent->left[i];
+        tree_node_inc(nseq->left[i]);
+    }
+
+    return (struct prover_rule_result){nseq, NULL};
+}
+
+// disjunction (right disjunct), right
+static struct prover_rule_result rule_disjr_r(struct proof_sequent *sequent,
+    int __attribute__((unused)) which) {
+
+    struct proof_sequent *nseq = zalloc(sizeof(*nseq));
+
+    nseq->right = sequent->right->child[1];
+    tree_node_inc(nseq->right);
+
+    nseq->left_count = sequent->left_count;
+    nseq->left = zalloc(sizeof(*nseq->left) * nseq->left_count);
+
+    // copy old sequent left children over
+    for(int i = 0; i < sequent->left_count; i ++) {
+        nseq->left[i] = sequent->left[i];
+        tree_node_inc(nseq->left[i]);
+    }
+
+    return (struct prover_rule_result){nseq, NULL};
+}
+
+static bool is_rule_disj_r(struct proof_sequent *sequent) {
+    return sequent->right->type == TREE_NODE_DISJUNCTION;
+}
+
+// implication, right
 static struct prover_rule_result rule_impl_r(struct proof_sequent *sequent,
     int __attribute__((unused)) which) {
 

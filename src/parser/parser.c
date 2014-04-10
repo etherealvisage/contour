@@ -55,19 +55,25 @@ static struct tree_node *parse_helper(struct lex_state *state) {
     if(lex_match(state, '(')) {
         // negation?
         if(lex_match(state, '~')) {
-            ret->type = TREE_NODE_NEGATION;
-            ret->child = malloc(sizeof(struct tree_node *));
-            ret->child_count = 1;
+            // implication to absurdity
+            ret->type = TREE_NODE_IMPLICATION;
+            ret->child = zalloc(sizeof(struct tree_node *)*2);
+            ret->child_count = 2;
 
             // recursively parse the middle
             ret->child[0] = parse_helper(state);
+
+            // add absurdity
+            ret->child[1]->child_count = 0;
+            ret->child[1]->refcount = 1;
+            ret->child[1]->type = TREE_NODE_ABSURDITY;
         }
         // forall?
         else if(lex_match(state, '@')) {
             struct tree_node *var = parse_helper_variable(state);
 
             ret->type = TREE_NODE_FORALL;
-            ret->child = malloc(sizeof(struct tree_node *)*2);
+            ret->child = zalloc(sizeof(struct tree_node *)*2);
             ret->child_count = 2;
 
             ret->child[0] = var;
@@ -78,7 +84,7 @@ static struct tree_node *parse_helper(struct lex_state *state) {
             struct tree_node *var = parse_helper_variable(state);
 
             ret->type = TREE_NODE_EXISTS;
-            ret->child = malloc(sizeof(struct tree_node *)*2);
+            ret->child = zalloc(sizeof(struct tree_node *)*2);
             ret->child_count = 2;
 
             ret->child[0] = var;
@@ -86,7 +92,7 @@ static struct tree_node *parse_helper(struct lex_state *state) {
         }
         // one of the binary connectives, then
         else {
-            ret->child = malloc(sizeof(struct tree_node *)*2);
+            ret->child = zalloc(sizeof(struct tree_node *)*2);
             ret->child_count = 2;
 
             // first child
