@@ -76,7 +76,7 @@ static void dump_sequent(struct proof_sequent *seq) {
 static bool prove_dfs(struct proof_sequent *sequent) {
     if(!sequent) return true;
 
-    contour_log_info("prove_dfs(sequent) called, where sequent:");
+    contour_log_info("prove_dfs(%p) called, where sequent:", sequent);
     dump_sequent(sequent);
 
     int count;

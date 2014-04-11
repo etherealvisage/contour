@@ -18,7 +18,27 @@ int main(int __attribute__((unused)) argc,
 
     tree_node_dec(test_parse);
 
-    test_parse = parse("((B&(~B))>A)");
+    //test_parse = parse("((B&(~B))>A)");
+    test_parse = parse("(((A|(A>_))>_)>_)");
+#if 0
+    (
+        (
+            (
+                A
+                |
+                (
+                    A
+                    >
+                    _
+                )
+            )
+            >
+            _
+        )
+        >
+        _
+    )
+#endif
     tree_node_dump(buffer, test_parse);
     printf("Dump:\n%s\n", buffer);
 
