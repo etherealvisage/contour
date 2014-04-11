@@ -127,8 +127,6 @@ static struct tree_node *parse_helper(struct lex_state *state) {
 
         ret->child_count = 0;
         ret->name = lex_name(state);
-        printf("ret: %p\n", ret);
-        printf("ret->name: %p\n", ret->name);
         // nonzero-place predicate...
         if(lex_match(state, '{')) {
             ret->child_count ++;

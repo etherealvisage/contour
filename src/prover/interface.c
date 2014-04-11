@@ -76,8 +76,8 @@ static void dump_sequent(struct proof_sequent *seq) {
 static bool prove_dfs(struct proof_sequent *sequent) {
     if(!sequent) return true;
 
-    contour_log_info("prove_dfs(%p) called, where sequent:", sequent);
-    dump_sequent(sequent);
+    //contour_log_info("prove_dfs(%p) called, where sequent:", sequent);
+    //dump_sequent(sequent);
 
     int count;
     struct prover_rule_application *results = prover_rules_find(sequent,
@@ -97,6 +97,7 @@ static bool prove_dfs(struct proof_sequent *sequent) {
         if(prove_dfs(result.right) && prove_dfs(result.left)) {
             sequent->sleft = result.left;
             sequent->sright = result.right;
+            sequent->tag = app->name;
             return true;
         }
         else {
@@ -129,7 +130,8 @@ static void dump_proof_helper(struct proof_sequent *sequent, int indent) {
     }
     prefix[indent] = 0;
 
-    contour_log_info("%s[%s ---> %s]", prefix, buffer, r);
+    contour_log_info("%s[%s ---> %s] (%s)", prefix, buffer, r,
+        sequent->tag?sequent->tag:"");
     free(r);
     
     if(sequent->sleft) dump_proof_helper(sequent->sleft, indent+1);

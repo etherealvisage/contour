@@ -15,6 +15,7 @@ typedef struct prover_rule_result (*prover_rule_function)(
 struct prover_rule_application {
     prover_rule_function rule;
     int index;
+    const char *name;
 };
 
 struct prover_rule_application *prover_rules_find(

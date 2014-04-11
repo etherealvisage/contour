@@ -12,14 +12,14 @@ int main(int __attribute__((unused)) argc,
 
     struct tree_node *test_parse = parse("(((A>B)&(~B))>(~A))");
 
-    char buffer[1024];
-    tree_node_dump(buffer, test_parse);
-    printf("Dump:\n%s\n", buffer);
+    //char buffer[1024];
+    //tree_node_dump(buffer, test_parse);
+    //printf("Dump:\n%s\n", buffer);
 
     tree_node_dec(test_parse);
 
     //test_parse = parse("((B&(~B))>A)");
-    test_parse = parse("(((A|(A>_))>_)>_)");
+    //test_parse = parse("(((A|(A>_))>_)>_)");
 #if 0
     (
         (
@@ -39,8 +39,8 @@ int main(int __attribute__((unused)) argc,
         _
     )
 #endif
-    tree_node_dump(buffer, test_parse);
-    printf("Dump:\n%s\n", buffer);
+    //tree_node_dump(buffer, test_parse);
+    //printf("Dump:\n%s\n", buffer);
 
     struct proof_sequent *proof = prove(test_parse);
     if(proof) {

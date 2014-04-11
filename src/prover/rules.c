@@ -6,11 +6,13 @@
 struct lrule {
     prover_rule_function rule;
     bool (*is)(struct proof_sequent *sequent, int index);
+    const char *name;
 };
 
 struct rrule {
     prover_rule_function rule;
     bool (*is)(struct proof_sequent *sequent);
+    const char *name;
 };
 
 // axiom
@@ -64,23 +66,23 @@ static struct prover_rule_result rule_cond4_l(struct proof_sequent *sequent,
 static bool is_rule_cond4_l(struct proof_sequent *sequent, int index);
 
 struct lrule lrules[] = {
-    {rule_axiom, is_rule_axiom},
-    {rule_absurd, is_rule_absurd},
-    {rule_conj_l, is_rule_conj_l},
-    {rule_disj_l, is_rule_disj_l},
+    {rule_axiom, is_rule_axiom, "Axiom"},
+    {rule_absurd, is_rule_absurd, "Absurdity"},
+    {rule_conj_l, is_rule_conj_l, "&L"},
+    {rule_disj_l, is_rule_disj_l, "|L"},
 
-    {rule_cond1_l, is_rule_cond1_l},
-    {rule_cond2_l, is_rule_cond2_l},
-    {rule_cond3_l, is_rule_cond3_l},
-    {rule_cond4_l, is_rule_cond4_l}
+    {rule_cond1_l, is_rule_cond1_l, ">1L"},
+    {rule_cond2_l, is_rule_cond2_l, ">2L"},
+    {rule_cond3_l, is_rule_cond3_l, ">3L"},
+    {rule_cond4_l, is_rule_cond4_l, ">4L"}
 };
 const int lrules_count = 8;
 
 struct rrule rrules[] = {
-    {rule_conj_r, is_rule_conj_r},
-    {rule_disjl_r, is_rule_disj_r},
-    {rule_disjr_r, is_rule_disj_r},
-    {rule_impl_r, is_rule_impl_r}
+    {rule_conj_r, is_rule_conj_r, "R&"},
+    {rule_disjl_r, is_rule_disj_r, "R|1"},
+    {rule_disjr_r, is_rule_disj_r, "R|2"},
+    {rule_impl_r, is_rule_impl_r, "R>"}
 };
 const int rrules_count = 4;
 
@@ -98,6 +100,7 @@ struct prover_rule_application *prover_rules_find(
                 sizeof(*applications) * (*count + 1));
             applications[*count].rule = lrules[j].rule;
             applications[*count].index = index;
+            applications[*count].name = lrules[j].name;
             (*count) ++;
         }
     }
@@ -109,6 +112,7 @@ struct prover_rule_application *prover_rules_find(
             sizeof(*applications) * (*count + 1));
         applications[*count].rule = rrules[j].rule;
         applications[*count].index = -1; // unused
+        applications[*count].name = rrules[j].name;
         (*count) ++;
     }
 
@@ -119,7 +123,6 @@ struct prover_rule_application *prover_rules_find(
 static struct prover_rule_result rule_axiom(
     struct proof_sequent __attribute__((unused)) * sequent,
     int __attribute__((unused)) which) {
-    printf("Applying axiom\n");
 
     // empty sequent as result
     return (struct prover_rule_result){NULL, NULL};
@@ -134,7 +137,6 @@ static bool is_rule_axiom(struct proof_sequent *sequent, int index) {
 static struct prover_rule_result rule_absurd(
     struct proof_sequent __attribute__((unused)) * sequent,
     int __attribute__((unused)) which) {
-    printf("Applying absurd\n");
 
     // empty sequent as result
     return (struct prover_rule_result){NULL, NULL};
@@ -149,7 +151,6 @@ static bool is_rule_absurd(struct proof_sequent *sequent, int index) {
 // conjunction, left
 static struct prover_rule_result rule_conj_l(struct proof_sequent *sequent,
     int which) {
-    printf("Applying conj_l\n");
 
     struct proof_sequent *nseq = zalloc(sizeof(*nseq));
 
@@ -184,7 +185,6 @@ static bool is_rule_conj_l(struct proof_sequent *sequent, int index) {
 // disjunction, left
 static struct prover_rule_result rule_disj_l(struct proof_sequent *sequent,
     int which) {
-    printf("Applying disj_r\n");
 
     struct proof_sequent *lseq = zalloc(sizeof(*lseq));
     struct proof_sequent *rseq = zalloc(sizeof(*rseq));
@@ -225,7 +225,6 @@ static bool is_rule_disj_l(struct proof_sequent *sequent, int index) {
 // conjunction, right
 static struct prover_rule_result rule_conj_r(struct proof_sequent *sequent,
     int __attribute__((unused)) which) {
-    printf("Applying conj_r\n");
 
     struct proof_sequent *lseq = zalloc(sizeof(*lseq));
     struct proof_sequent *rseq = zalloc(sizeof(*rseq));
@@ -257,7 +256,6 @@ static bool is_rule_conj_r(struct proof_sequent *sequent) {
 // disjunction (left disjunct), right
 static struct prover_rule_result rule_disjl_r(struct proof_sequent *sequent,
     int __attribute__((unused)) which) {
-    printf("Applying disjl_r\n");
 
     struct proof_sequent *nseq = zalloc(sizeof(*nseq));
 
@@ -279,7 +277,6 @@ static struct prover_rule_result rule_disjl_r(struct proof_sequent *sequent,
 // disjunction (right disjunct), right
 static struct prover_rule_result rule_disjr_r(struct proof_sequent *sequent,
     int __attribute__((unused)) which) {
-    printf("Applying disjr_r\n");
 
     struct proof_sequent *nseq = zalloc(sizeof(*nseq));
 
@@ -305,7 +302,6 @@ static bool is_rule_disj_r(struct proof_sequent *sequent) {
 // implication, right
 static struct prover_rule_result rule_impl_r(struct proof_sequent *sequent,
     int __attribute__((unused)) which) {
-    printf("Applying impl_r\n");
 
     struct proof_sequent *nseq = zalloc(sizeof(*nseq));
 
@@ -335,7 +331,6 @@ static bool is_rule_impl_r(struct proof_sequent *sequent) {
 // conditional 1, left
 static struct prover_rule_result rule_cond1_l(struct proof_sequent *sequent,
     int which) {
-    printf("Applying cond1_l\n");
 
     struct proof_sequent *nseq = zalloc(sizeof(*nseq));
 
@@ -379,7 +374,6 @@ static bool is_rule_cond1_l(struct proof_sequent *sequent, int index) {
 // conditional 2, left
 static struct prover_rule_result rule_cond2_l(struct proof_sequent *sequent,
     int which) {
-    printf("Applying cond2_l\n");
 
     struct proof_sequent *nseq = zalloc(sizeof(*nseq));
 
@@ -441,7 +435,6 @@ static bool is_rule_cond2_l(struct proof_sequent *sequent, int index) {
 // conditional 3, left
 static struct prover_rule_result rule_cond3_l(struct proof_sequent *sequent,
     int which) {
-    printf("Applying cond3_l\n");
 
     struct proof_sequent *nseq = zalloc(sizeof(*nseq));
 
@@ -502,7 +495,6 @@ static bool is_rule_cond3_l(struct proof_sequent *sequent, int index) {
 // conditional 4, left
 static struct prover_rule_result rule_cond4_l(struct proof_sequent *sequent,
     int which) {
-    printf("Applying cond4_l\n");
 
     struct proof_sequent *lseq = zalloc(sizeof(*lseq));
     struct proof_sequent *rseq = zalloc(sizeof(*rseq));

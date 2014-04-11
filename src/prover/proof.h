@@ -8,6 +8,8 @@ struct proof_sequent {
     int left_count;
 
     struct proof_sequent *sleft, *sright;
+
+    const char *tag;
 };
 
 #endif
