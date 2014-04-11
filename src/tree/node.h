@@ -42,6 +42,7 @@ void tree_node_inc(struct tree_node *node);
 /// refcountint: decrement # of references
 void tree_node_dec(struct tree_node *node);
 
+// returns true if equal
 bool tree_node_cmp(struct tree_node *n, struct tree_node *m);
 
 #endif
