@@ -3,21 +3,28 @@
 #include "util.h"
 #include "log/log.h"
 
-struct proof *prove(struct tree_node *expression) {
+static bool prove_dfs(struct proof_sequent *sequent);
+
+struct proof_sequent *prove(struct tree_node *expression) {
     struct proof_sequent *initial_sequent = zalloc(sizeof(*initial_sequent));
 
     initial_sequent->left_count = 0;
     initial_sequent->right = expression;
 
+    if(prove_dfs(initial_sequent)) return initial_sequent;
+    // XXX: leak
+    else return NULL;
+
+    #if 0
     int count;
-    struct prover_rule_application *results = prover_rules_find(initial_sequent, &count);
+    struct prover_rule_application *results = prover_rules_find(initial_sequent,
+        &count);
     contour_log_info("results: %p", results);
     for(int i = 0; i < count; i ++) {
         struct prover_rule_application *r = results + i;
         //contour_log_info("results[%i]: = {%p,%p}", i, r->left, r->right);
         contour_log_info("results[%i] = {%p, %i}", i, r->rule, r->index);
 
-        #if 0
         char buffer[1024];
         if(r->left) {
             struct proof_sequent *left = r->left;
@@ -41,8 +48,37 @@ struct proof *prove(struct tree_node *expression) {
                 contour_log_info("left %i: %s", j, buffer);
             }
         }
-        #endif
+    }
+    #endif
+}
+
+static bool prove_dfs(struct proof_sequent *sequent) {
+    if(!sequent) return true;
+
+    int count;
+    struct prover_rule_application *results = prover_rules_find(sequent,
+        &count);
+
+    if(count == 0) {
+        free(results);
+        return false;
     }
 
-    return NULL;
+    for(int i = 0; i < count; i ++) {
+        struct prover_rule_application *app = results + i;
+
+        struct prover_rule_result result = app->rule(sequent, app->index);
+
+        // do the right first, it can be smaller.
+        if(prove_dfs(result.right) && prove_dfs(result.left)) {
+            sequent->sleft = result.left;
+            sequent->sright = result.right;
+            return true;
+        }
+        else {
+            // XXX: free memory + do refcounting etc.
+        }
+    }
+
+    return false;
 }

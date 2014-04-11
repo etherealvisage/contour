@@ -20,7 +20,12 @@ int main(int argc, char *argv[]) {
     tree_node_dump(buffer, test_parse);
     printf("Dump:\n%s\n", buffer);
 
-    prove(test_parse);
+    if(prove(test_parse)) {
+        printf("Provable!\n");
+    }
+    else {
+        printf("Unprovable.\n");
+    }
 
     return 0;
 }

@@ -6,11 +6,8 @@
 struct proof_sequent {
     struct tree_node **left, *right;
     int left_count;
-};
 
-struct proof {
-    struct sequent **sequent;
-    int sequent_count;
+    struct proof_sequent *sleft, *sright;
 };
 
 #endif

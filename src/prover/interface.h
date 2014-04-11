@@ -3,6 +3,6 @@
 
 #include "proof.h"
 
-struct proof *prove(struct tree_node *expression);
+struct proof_sequent *prove(struct tree_node *expression);
 
 #endif
