@@ -537,6 +537,7 @@ static struct prover_rule_result rule_cond4_l(struct proof_sequent *sequent,
         else {
             // (left) replace (A>B)>C with B>C
             struct tree_node *n = zalloc(sizeof(*n));
+            n->type = TREE_NODE_IMPLICATION;
             n->child_count = 2;
             n->child = zalloc(sizeof(struct tree_node *) * n->child_count);
 

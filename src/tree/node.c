@@ -75,13 +75,14 @@ static void tree_node_fmt_helper(struct strbuild *str,
     struct tree_node *node) {
 
     if(node == NULL) {
-        strbuild(str, '-');
+        strbuild(str, '0');
         return;
     }
 
     if(node->type == TREE_NODE_PREDICATE) {
         char *s = node->name;
-        while(*s) strbuild(str, *s), s++;
+        if(!s) strbuild(str, '=');
+        else while(*s) strbuild(str, *s), s++;
     }
     else if(node->type == TREE_NODE_ABSURDITY) {
         strbuild(str, '_');
