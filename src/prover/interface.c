@@ -1,9 +1,14 @@
+#include <string.h>
+
 #include "interface.h"
 #include "rules.h"
 #include "util.h"
 #include "log/log.h"
 
+static void dump_sequent(struct proof_sequent *sequent);
 static bool prove_dfs(struct proof_sequent *sequent);
+
+static void dump_proof_helper(struct proof_sequent *sequent, int indent);
 
 struct proof_sequent *prove(struct tree_node *expression) {
     struct proof_sequent *initial_sequent = zalloc(sizeof(*initial_sequent));
@@ -52,8 +57,27 @@ struct proof_sequent *prove(struct tree_node *expression) {
     #endif
 }
 
+static void dump_sequent(struct proof_sequent *seq) {
+    char buffer[1024];
+    buffer[0] = 0;
+    for(int i = 0; i < seq->left_count; i ++) {
+        char *p = tree_node_fmt(seq->left[i]);
+        if(i != 0) strcat(buffer, ", ");
+        strcat(buffer, p);
+        free(p);
+    }
+    
+    char *r = tree_node_fmt(seq->right);
+
+    contour_log_info("%s ---> %s", buffer, r);
+    free(r);
+}
+
 static bool prove_dfs(struct proof_sequent *sequent) {
     if(!sequent) return true;
+
+    contour_log_info("prove_dfs(sequent) called, where sequent:");
+    dump_sequent(sequent);
 
     int count;
     struct prover_rule_application *results = prover_rules_find(sequent,
@@ -76,9 +100,38 @@ static bool prove_dfs(struct proof_sequent *sequent) {
             return true;
         }
         else {
-            // XXX: free memory + do refcounting etc.
+            // XXX: leak -- free memory + do refcounting etc.
         }
     }
 
     return false;
+}
+
+void dump_proof(struct proof_sequent *sequent) {
+    dump_proof_helper(sequent, 0);
+}
+
+static void dump_proof_helper(struct proof_sequent *sequent, int indent) {
+    char buffer[1024];
+    buffer[0] = 0;
+    for(int i = 0; i < sequent->left_count; i ++) {
+        char *p = tree_node_fmt(sequent->left[i]);
+        if(i != 0) strcat(buffer, ", ");
+        strcat(buffer, p);
+        free(p);
+    }
+    
+    char *r = tree_node_fmt(sequent->right);
+
+    char prefix[1024];
+    for(int i = 0; i < indent; i ++) {
+        prefix[i] = '\t';
+    }
+    prefix[indent] = 0;
+
+    contour_log_info("%s[%s ---> %s]", prefix, buffer, r);
+    free(r);
+    
+    if(sequent->sleft) dump_proof_helper(sequent->sleft, indent+1);
+    if(sequent->sright) dump_proof_helper(sequent->sright, indent+1);
 }

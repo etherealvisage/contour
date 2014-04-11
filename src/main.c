@@ -5,7 +5,9 @@
 
 #include "prover/interface.h"
 
-int main(int argc, char *argv[]) {
+int main(int __attribute__((unused)) argc,
+        char __attribute__((unused)) *argv[]) {
+
     contour_log_info("Initializing.");
 
     struct tree_node *test_parse = parse("(((A>B)&(~B))>(~A))");
@@ -20,8 +22,10 @@ int main(int argc, char *argv[]) {
     tree_node_dump(buffer, test_parse);
     printf("Dump:\n%s\n", buffer);
 
-    if(prove(test_parse)) {
+    struct proof_sequent *proof = prove(test_parse);
+    if(proof) {
         printf("Provable!\n");
+        dump_proof(proof);
     }
     else {
         printf("Unprovable.\n");

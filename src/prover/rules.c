@@ -74,6 +74,7 @@ struct lrule lrules[] = {
     {rule_cond3_l, is_rule_cond3_l},
     {rule_cond4_l, is_rule_cond4_l}
 };
+const int lrules_count = 8;
 
 struct rrule rrules[] = {
     {rule_conj_r, is_rule_conj_r},
@@ -81,6 +82,7 @@ struct rrule rrules[] = {
     {rule_disjr_r, is_rule_disj_r},
     {rule_impl_r, is_rule_impl_r}
 };
+const int rrules_count = 4;
 
 struct prover_rule_application *prover_rules_find(
     struct proof_sequent *sequent, int *count) {
@@ -89,20 +91,22 @@ struct prover_rule_application *prover_rules_find(
     *count = 0;
 
     for(int index = 0; index < sequent->left_count; index ++) {
-        for(int j = 0; j < (int)(sizeof(lrules)/sizeof(lrules[0])); j ++) {
+        for(int j = 0; j < lrules_count; j ++) {
             if(!lrules[j].is(sequent, index)) continue;
 
-            applications = realloc(applications, sizeof(*applications) * (*count + 1));
+            applications = realloc(applications,
+                sizeof(*applications) * (*count + 1));
             applications[*count].rule = lrules[j].rule;
             applications[*count].index = index;
             (*count) ++;
         }
     }
 
-    for(int j = 0; j < (int)(sizeof(rrules)/sizeof(rrules[0])); j ++) {
+    for(int j = 0; j < rrules_count; j ++) {
         if(!rrules[j].is(sequent)) continue;
 
-        applications = realloc(applications, sizeof(*applications) * (*count + 1));
+        applications = realloc(applications,
+            sizeof(*applications) * (*count + 1));
         applications[*count].rule = rrules[j].rule;
         applications[*count].index = -1; // unused
         (*count) ++;
@@ -162,8 +166,8 @@ static struct prover_rule_result rule_conj_l(struct proof_sequent *sequent,
             nseq->left[i] = sequent->left[i]->child[0];
             tree_node_inc(nseq->left[i]);
             // add right child onto end of left sequent
-            nseq->left[sequent->left_count-1] = sequent->left[i]->child[1];
-            tree_node_inc(nseq->left[sequent->left_count-1]);
+            nseq->left[sequent->left_count] = sequent->left[i]->child[1];
+            tree_node_inc(nseq->left[sequent->left_count]);
         }
     }
 
@@ -352,10 +356,10 @@ static bool is_rule_cond1_l(struct proof_sequent *sequent, int index) {
 
     struct tree_node *impl = sequent->left[index];
 
-    if(impl->child[1]->type != TREE_NODE_PREDICATE) return false;
+    if(impl->child[0]->type != TREE_NODE_PREDICATE) return false;
 
     for(int i = 0; i < sequent->left_count; i ++) {
-        if(!tree_node_cmp(impl->child[1], sequent->left[i])) continue;
+        if(!tree_node_cmp(impl->child[0], sequent->left[i])) continue;
 
         return true;
     }

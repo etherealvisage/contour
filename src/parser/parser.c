@@ -64,6 +64,7 @@ static struct tree_node *parse_helper(struct lex_state *state) {
             ret->child[0] = parse_helper(state);
 
             // add absurdity
+            ret->child[1] = zalloc(sizeof(*ret->child[1]));
             ret->child[1]->child_count = 0;
             ret->child[1]->refcount = 1;
             ret->child[1]->type = TREE_NODE_ABSURDITY;

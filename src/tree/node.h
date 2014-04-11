@@ -32,7 +32,10 @@ struct tree_node {
 // NOTE: this function lacks size information about the buffer, and as such,
 // will overflow on large nodes. Should _only_ be used for debugging purposes!
 char *tree_node_dump(char *buffer, struct tree_node *node);
-bool tree_node_isatomic(struct tree_node *node);
+
+// Produces nice compact representation of tree node.
+// Returned string should be free()d.
+char *tree_node_fmt(struct tree_node *node);
 
 /// duplicates an existing tree node; returns ref to caller
 struct tree_node *tree_node_dup(struct tree_node *node);
