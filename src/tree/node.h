@@ -37,6 +37,10 @@ char *tree_node_dump(char *buffer, struct tree_node *node);
 // Returned string should be free()d.
 char *tree_node_fmt(struct tree_node *node);
 
+// Produces LaTeX representation of tree node.
+// Returned string should be free()d.
+char *tree_node_fmt_latex(struct tree_node *node);
+
 /// duplicates an existing tree node; returns ref to caller
 struct tree_node *tree_node_dup(struct tree_node *node);
 

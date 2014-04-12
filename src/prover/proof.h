@@ -9,7 +9,7 @@ struct proof_sequent {
 
     struct proof_sequent *sleft, *sright;
 
-    const char *tag;
+    const char *tag, *latex_tag;
 };
 
 #endif

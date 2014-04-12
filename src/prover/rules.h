@@ -16,6 +16,7 @@ struct prover_rule_application {
     prover_rule_function rule;
     int index;
     const char *name;
+    const char *latex_name;
 };
 
 struct prover_rule_application *prover_rules_find(

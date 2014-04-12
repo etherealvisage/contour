@@ -7,12 +7,14 @@ struct lrule {
     prover_rule_function rule;
     bool (*is)(struct proof_sequent *sequent, int index);
     const char *name;
+    const char *latex_name;
 };
 
 struct rrule {
     prover_rule_function rule;
     bool (*is)(struct proof_sequent *sequent);
     const char *name;
+    const char *latex_name;
 };
 
 // axiom
@@ -66,23 +68,23 @@ static struct prover_rule_result rule_cond4_l(struct proof_sequent *sequent,
 static bool is_rule_cond4_l(struct proof_sequent *sequent, int index);
 
 struct lrule lrules[] = {
-    {rule_axiom, is_rule_axiom, "Axiom"},
-    {rule_absurd, is_rule_absurd, "Absurdity"},
-    {rule_conj_l, is_rule_conj_l, "&L"},
-    {rule_disj_l, is_rule_disj_l, "|L"},
+    {rule_axiom, is_rule_axiom, "Axiom", "Axiom"},
+    {rule_absurd, is_rule_absurd, "Absurdity", "Absurd"},
+    {rule_conj_l, is_rule_conj_l, "&L", "$\\wedge$-L"},
+    {rule_disj_l, is_rule_disj_l, "|L", "$\\vee$-L"},
 
-    {rule_cond1_l, is_rule_cond1_l, ">1L"},
-    {rule_cond2_l, is_rule_cond2_l, ">2L"},
-    {rule_cond3_l, is_rule_cond3_l, ">3L"},
-    {rule_cond4_l, is_rule_cond4_l, ">4L"}
+    {rule_cond1_l, is_rule_cond1_l, ">1L", "$\\supset_1$-L"},
+    {rule_cond2_l, is_rule_cond2_l, ">2L", "$\\supset_2$-L"},
+    {rule_cond3_l, is_rule_cond3_l, ">3L", "$\\supset_3$-L"},
+    {rule_cond4_l, is_rule_cond4_l, ">4L", "$\\supset_4$-L"}
 };
 const int lrules_count = 8;
 
 struct rrule rrules[] = {
-    {rule_conj_r, is_rule_conj_r, "R&"},
-    {rule_disjl_r, is_rule_disj_r, "R|1"},
-    {rule_disjr_r, is_rule_disj_r, "R|2"},
-    {rule_impl_r, is_rule_impl_r, "R>"}
+    {rule_conj_r, is_rule_conj_r, "R&", "$\\wedge$-R"},
+    {rule_disjl_r, is_rule_disj_r, "R|1", "$\\vee_1$-R"},
+    {rule_disjr_r, is_rule_disj_r, "R|2", "$\\vee_2$-R"},
+    {rule_impl_r, is_rule_impl_r, "R>", "$\\supset$-R"}
 };
 const int rrules_count = 4;
 
@@ -101,6 +103,7 @@ struct prover_rule_application *prover_rules_find(
             applications[*count].rule = lrules[j].rule;
             applications[*count].index = index;
             applications[*count].name = lrules[j].name;
+            applications[*count].latex_name = lrules[j].latex_name;
             (*count) ++;
         }
     }

@@ -5,10 +5,10 @@
 #include "util.h"
 #include "log/log.h"
 
-static void dump_sequent(struct proof_sequent *sequent);
 static bool prove_dfs(struct proof_sequent *sequent);
 
 static void dump_proof_helper(struct proof_sequent *sequent, int indent);
+static void latex_proof_helper(struct proof_sequent *sequent);
 
 struct proof_sequent *prove(struct tree_node *expression) {
     struct proof_sequent *initial_sequent = zalloc(sizeof(*initial_sequent));
@@ -57,22 +57,6 @@ struct proof_sequent *prove(struct tree_node *expression) {
     #endif
 }
 
-static void dump_sequent(struct proof_sequent *seq) {
-    char buffer[1024];
-    buffer[0] = 0;
-    for(int i = 0; i < seq->left_count; i ++) {
-        char *p = tree_node_fmt(seq->left[i]);
-        if(i != 0) strcat(buffer, ", ");
-        strcat(buffer, p);
-        free(p);
-    }
-    
-    char *r = tree_node_fmt(seq->right);
-
-    contour_log_info("%s ---> %s", buffer, r);
-    free(r);
-}
-
 static bool prove_dfs(struct proof_sequent *sequent) {
     if(!sequent) return true;
 
@@ -98,6 +82,7 @@ static bool prove_dfs(struct proof_sequent *sequent) {
             sequent->sleft = result.left;
             sequent->sright = result.right;
             sequent->tag = app->name;
+            sequent->latex_tag = app->latex_name;
             return true;
         }
         else {
@@ -136,4 +121,36 @@ static void dump_proof_helper(struct proof_sequent *sequent, int indent) {
     
     if(sequent->sleft) dump_proof_helper(sequent->sleft, indent+1);
     if(sequent->sright) dump_proof_helper(sequent->sright, indent+1);
+}
+
+void latex_proof(struct proof_sequent *sequent) {
+    contour_log_info("\\begin{prooftree}");
+    latex_proof_helper(sequent);
+    contour_log_info("\\end{prooftree}");
+}
+
+static void latex_proof_helper(struct proof_sequent *sequent) {
+    if(sequent->sleft) latex_proof_helper(sequent->sleft);
+    if(sequent->sright) latex_proof_helper(sequent->sright);
+
+    char buffer[1024];
+    buffer[0] = 0;
+    for(int i = 0; i < sequent->left_count; i ++) {
+        char *p = tree_node_fmt_latex(sequent->left[i]);
+        if(i != 0) strcat(buffer, ", ");
+        strcat(buffer, p);
+        free(p);
+    }
+    
+    char *r = tree_node_fmt_latex(sequent->right);
+
+    const char *type = "        \\Axiom";
+    if(sequent->sright) type = "        \\BinaryInf";
+    else if(sequent->sleft) type = "        \\UnaryInf";
+
+    contour_log_info("    \\RightLabel{%s}", sequent->latex_tag);
+    contour_log_info("%s$%s \\fCenter %s$",
+        type, buffer, r);
+
+    free(r);
 }

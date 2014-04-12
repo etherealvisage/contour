@@ -6,5 +6,6 @@
 struct proof_sequent *prove(struct tree_node *expression);
 
 void dump_proof(struct proof_sequent *sequent);
+void latex_proof(struct proof_sequent *sequent);
 
 #endif
