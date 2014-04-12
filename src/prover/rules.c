@@ -70,21 +70,21 @@ static bool is_rule_cond4_l(struct proof_sequent *sequent, int index);
 struct lrule lrules[] = {
     {rule_axiom, is_rule_axiom, "Axiom", "Axiom"},
     {rule_absurd, is_rule_absurd, "Absurdity", "Absurd"},
-    {rule_conj_l, is_rule_conj_l, "&L", "$\\wedge$-L"},
-    {rule_disj_l, is_rule_disj_l, "|L", "$\\vee$-L"},
+    {rule_conj_l, is_rule_conj_l, "&L", "$\\wedge \\Rightarrow$"},
+    {rule_disj_l, is_rule_disj_l, "|L", "$\\vee \\Rightarrow$"},
 
-    {rule_cond1_l, is_rule_cond1_l, ">1L", "$\\supset_1$-L"},
-    {rule_cond2_l, is_rule_cond2_l, ">2L", "$\\supset_2$-L"},
-    {rule_cond3_l, is_rule_cond3_l, ">3L", "$\\supset_3$-L"},
-    {rule_cond4_l, is_rule_cond4_l, ">4L", "$\\supset_4$-L"}
+    {rule_cond1_l, is_rule_cond1_l, ">1L", "$\\supset \\Rightarrow_1$"},
+    {rule_cond2_l, is_rule_cond2_l, ">2L", "$\\supset \\Rightarrow_2$"},
+    {rule_cond3_l, is_rule_cond3_l, ">3L", "$\\supset \\Rightarrow_3$"},
+    {rule_cond4_l, is_rule_cond4_l, ">4L", "$\\supset \\Rightarrow_4$"}
 };
 const int lrules_count = 8;
 
 struct rrule rrules[] = {
-    {rule_conj_r, is_rule_conj_r, "R&", "$\\wedge$-R"},
-    {rule_disjl_r, is_rule_disj_r, "R|1", "$\\vee_1$-R"},
-    {rule_disjr_r, is_rule_disj_r, "R|2", "$\\vee_2$-R"},
-    {rule_impl_r, is_rule_impl_r, "R>", "$\\supset$-R"}
+    {rule_conj_r, is_rule_conj_r, "R&", "$\\Rightarrow\\wedge$"},
+    {rule_disjl_r, is_rule_disj_r, "R|1", "$\\Rightarrow\\vee$"},
+    {rule_disjr_r, is_rule_disj_r, "R|2", "$\\Rightarrow\\vee$"},
+    {rule_impl_r, is_rule_impl_r, "R>", "$\\Rightarrow\\supset$"}
 };
 const int rrules_count = 4;
 
@@ -116,6 +116,7 @@ struct prover_rule_application *prover_rules_find(
         applications[*count].rule = rrules[j].rule;
         applications[*count].index = -1; // unused
         applications[*count].name = rrules[j].name;
+        applications[*count].latex_name = rrules[j].latex_name;
         (*count) ++;
     }
 

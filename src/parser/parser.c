@@ -144,7 +144,8 @@ static struct tree_node *parse_helper(struct lex_state *state) {
     }
     else {
         // parse error
-        contour_log_error("Don't know what to do with %c", lex_peek(state));
+        contour_log_error("Don't know what to do with '%c' (%i)",
+            lex_peek(state), lex_peek(state));
         exit(1);
     }
 

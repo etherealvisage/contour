@@ -10,7 +10,13 @@ int main(int __attribute__((unused)) argc,
         char __attribute__((unused)) *argv[]) {
 
     char *buffer = malloc(1048576);
-    fgets(buffer, 1048576, stdin);
+    int bprogress = 0;
+    char buf[1024];
+    while(fgets(buf, 1024, stdin)) {
+        strcpy(buffer + bprogress, buf);
+        bprogress += strlen(buf);
+    }
+    //fgets(buffer, 1048576, stdin);
 
     struct tree_node *parse_result = parse(buffer);
 

@@ -10,58 +10,31 @@ static bool prove_dfs(struct proof_sequent *sequent);
 static void dump_proof_helper(struct proof_sequent *sequent, int indent);
 static void latex_proof_helper(struct proof_sequent *sequent);
 
+static int dfs_count = 0;
+
 struct proof_sequent *prove(struct tree_node *expression) {
     struct proof_sequent *initial_sequent = zalloc(sizeof(*initial_sequent));
 
     initial_sequent->left_count = 0;
     initial_sequent->right = expression;
 
-    if(prove_dfs(initial_sequent)) return initial_sequent;
+    dfs_count = 0;
+
+    bool result = prove_dfs(initial_sequent);
+
+    contour_log_info("DFS count: %i", dfs_count);
+
+    if(result) {
+        return initial_sequent;
+    }
     // XXX: leak
     else return NULL;
-
-    #if 0
-    int count;
-    struct prover_rule_application *results = prover_rules_find(initial_sequent,
-        &count);
-    contour_log_info("results: %p", results);
-    for(int i = 0; i < count; i ++) {
-        struct prover_rule_application *r = results + i;
-        //contour_log_info("results[%i]: = {%p,%p}", i, r->left, r->right);
-        contour_log_info("results[%i] = {%p, %i}", i, r->rule, r->index);
-
-        char buffer[1024];
-        if(r->left) {
-            struct proof_sequent *left = r->left;
-            contour_log_info("left sequent:");
-            tree_node_dump(buffer, left->right);
-            contour_log_info("right: %s", buffer);
-
-            for(int j = 0; j < left->left_count; j ++) {
-                tree_node_dump(buffer, left->left[j]);
-                contour_log_info("left %i: %s", j, buffer);
-            }
-        }
-        if(r->right) {
-            struct proof_sequent *right = r->right;
-            contour_log_info("right sequent:");
-            tree_node_dump(buffer, right->right);
-            contour_log_info("right: %s", buffer);
-
-            for(int j = 0; j < right->left_count; j ++) {
-                tree_node_dump(buffer, right->left[j]);
-                contour_log_info("left %i: %s", j, buffer);
-            }
-        }
-    }
-    #endif
 }
 
 static bool prove_dfs(struct proof_sequent *sequent) {
     if(!sequent) return true;
 
-    //contour_log_info("prove_dfs(%p) called, where sequent:", sequent);
-    //dump_sequent(sequent);
+    dfs_count ++;
 
     int count;
     struct prover_rule_application *results = prover_rules_find(sequent,
@@ -86,6 +59,8 @@ static bool prove_dfs(struct proof_sequent *sequent) {
             return true;
         }
         else {
+            sequent->tag = "impossible";
+            sequent->latex_tag = "impossible";
             // XXX: leak -- free memory + do refcounting etc.
         }
     }

@@ -132,7 +132,7 @@ static void tree_node_fmt_latex_helper(struct strbuild *str,
         else strbuild_s(str, s);
     }
     else if(node->type == TREE_NODE_ABSURDITY) {
-        strbuild_s(str, "\\falsum");
+        strbuild_s(str, "\\bot");
     }
     else if(node->type == TREE_NODE_IMPLICATION
         || node->type == TREE_NODE_CONJUNCTION
