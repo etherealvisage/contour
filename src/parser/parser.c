@@ -50,32 +50,25 @@ struct tree_node *parse(const char *source) {
 }
 
 static struct tree_node *parse_helper(struct lex_state *state) {
-    struct tree_node *ret = zalloc(sizeof(*ret));
+    struct tree_node *ret = NULL;
     // one of the various connectives?
     if(lex_match(state, '(')) {
         // negation?
         if(lex_match(state, '~')) {
             // implication to absurdity
-            ret->type = TREE_NODE_IMPLICATION;
-            ret->child = zalloc(sizeof(struct tree_node *)*2);
-            ret->child_count = 2;
+            ret = tree_node_make(TREE_NODE_IMPLICATION, 2);
 
             // recursively parse the middle
             ret->child[0] = parse_helper(state);
 
             // add absurdity
-            ret->child[1] = zalloc(sizeof(*ret->child[1]));
-            ret->child[1]->child_count = 0;
-            ret->child[1]->refcount = 1;
-            ret->child[1]->type = TREE_NODE_ABSURDITY;
+            ret->child[1] = tree_node_make(TREE_NODE_ABSURDITY, 0);
         }
         // forall?
         else if(lex_match(state, '@')) {
             struct tree_node *var = parse_helper_variable(state);
 
-            ret->type = TREE_NODE_FORALL;
-            ret->child = zalloc(sizeof(struct tree_node *)*2);
-            ret->child_count = 2;
+            ret = tree_node_make(TREE_NODE_FORALL, 2);
 
             ret->child[0] = var;
             ret->child[1] = parse_helper(state);
@@ -84,31 +77,30 @@ static struct tree_node *parse_helper(struct lex_state *state) {
         else if(lex_match(state, '!')) {
             struct tree_node *var = parse_helper_variable(state);
 
-            ret->type = TREE_NODE_EXISTS;
-            ret->child = zalloc(sizeof(struct tree_node *)*2);
-            ret->child_count = 2;
+            ret = tree_node_make(TREE_NODE_EXISTS, 2);
 
             ret->child[0] = var;
             ret->child[1] = parse_helper(state);
         }
         // one of the binary connectives, then
         else {
-            ret->child = zalloc(sizeof(struct tree_node *)*2);
-            ret->child_count = 2;
-
             // first child
-            ret->child[0] = parse_helper(state);
+            struct tree_node *left = parse_helper(state);
             
             // what's the type?
-            if(lex_match(state, '&')) ret->type = TREE_NODE_CONJUNCTION;
-            else if(lex_match(state, '|')) ret->type = TREE_NODE_DISJUNCTION;
-            else if(lex_match(state, '>')) ret->type = TREE_NODE_IMPLICATION;
+            if(lex_match(state, '&'))
+                ret = tree_node_make(TREE_NODE_CONJUNCTION, 2);
+            else if(lex_match(state, '|'))
+                ret = tree_node_make(TREE_NODE_DISJUNCTION, 2);
+            else if(lex_match(state, '>'))
+                ret = tree_node_make(TREE_NODE_IMPLICATION, 2);
             else {
                 contour_log_error("Unknown logical connective %c",
                     lex_peek(state));
                 exit(1);
             }
 
+            ret->child[0] = left;
             // second child
             ret->child[1] = parse_helper(state);
         }
@@ -117,15 +109,13 @@ static struct tree_node *parse_helper(struct lex_state *state) {
         lex_expect(state, ')');
     }
     else if(lex_peek(state) == '_') {
-        ret->type = TREE_NODE_ABSURDITY;
-        ret->child_count = 0;
+        ret = tree_node_make(TREE_NODE_ABSURDITY, 0);
         lex_match(state, '_');
     }
     // a predicate?
     else if(isalnum(lex_peek(state))) {
-        ret->type = TREE_NODE_PREDICATE;
+        ret = tree_node_make(TREE_NODE_PREDICATE, 0);
 
-        ret->child_count = 0;
         ret->name = lex_name(state);
         // nonzero-place predicate...
         if(lex_match(state, '{')) {
@@ -153,15 +143,10 @@ static struct tree_node *parse_helper(struct lex_state *state) {
 }
 
 static struct tree_node *parse_helper_variable(struct lex_state *state) {
-    struct tree_node *ret = zalloc(sizeof(*ret));
-
-    ret->type = TREE_NODE_VARIABLE;
-    ret->child_count = 0;
-    ret->child = NULL;
+    struct tree_node *ret = tree_node_make(TREE_NODE_VARIABLE, 0);
 
     ret->name = lex_name(state);
 
-    contour_log_error("parse_helper_variable NYI");
     return ret;
 }
 

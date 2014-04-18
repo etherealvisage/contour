@@ -28,6 +28,8 @@ struct tree_node {
     int refcount;
 };
 
+struct tree_node *tree_node_make(enum tree_node_type type, int child_count);
+
 // Produces ASCII representation of tree node.
 // NOTE: this function lacks size information about the buffer, and as such,
 // will overflow on large nodes. Should _only_ be used for debugging purposes!
@@ -44,8 +46,8 @@ char *tree_node_fmt_latex(struct tree_node *node);
 /// duplicates an existing tree node; returns ref to caller
 struct tree_node *tree_node_dup(struct tree_node *node);
 
-/// refcounting: increment # of references
-void tree_node_inc(struct tree_node *node);
+/// refcounting: increment # of references (returns node)
+struct tree_node *tree_node_inc(struct tree_node *node);
 /// refcountint: decrement # of references
 void tree_node_dec(struct tree_node *node);
 

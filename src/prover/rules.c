@@ -160,26 +160,20 @@ static bool is_rule_absurd(struct proof_sequent *sequent, int index) {
 static struct prover_rule_result rule_conj_l(struct proof_sequent *sequent,
     int which) {
 
-    struct proof_sequent *nseq = zalloc(sizeof(*nseq));
+    struct proof_sequent *nseq = sequent_make(sequent->left_count + 1);
 
-    nseq->right = sequent->right;
-    tree_node_inc(nseq->right);
-
-    nseq->left_count = sequent->left_count + 1;
-    nseq->left = zalloc(sizeof(*nseq->left) * nseq->left_count);
+    nseq->right = tree_node_inc(sequent->right);
 
     for(int i = 0; i < sequent->left_count; i ++) {
         if(i != which) {
-            nseq->left[i] = sequent->left[i];
-            tree_node_inc(nseq->left[i]);
+            nseq->left[i] = tree_node_inc(sequent->left[i]);
         }
         else {
             // add left child in place
-            nseq->left[i] = sequent->left[i]->child[0];
-            tree_node_inc(nseq->left[i]);
+            nseq->left[i] = tree_node_inc(sequent->left[i]->child[0]);
             // add right child onto end of left sequent
-            nseq->left[sequent->left_count] = sequent->left[i]->child[1];
-            tree_node_inc(nseq->left[sequent->left_count]);
+            nseq->left[sequent->left_count] =
+                tree_node_inc(sequent->left[i]->child[1]);
         }
     }
 
@@ -194,32 +188,21 @@ static bool is_rule_conj_l(struct proof_sequent *sequent, int index) {
 static struct prover_rule_result rule_disj_l(struct proof_sequent *sequent,
     int which) {
 
-    struct proof_sequent *lseq = zalloc(sizeof(*lseq));
-    struct proof_sequent *rseq = zalloc(sizeof(*rseq));
+    struct proof_sequent *lseq = sequent_make(sequent->left_count);
+    struct proof_sequent *rseq = sequent_make(sequent->left_count);
 
-    lseq->right = sequent->right;
-    tree_node_inc(lseq->right);
-    rseq->right = sequent->right;
-    tree_node_inc(rseq->right);
-
-    lseq->left_count = sequent->left_count;
-    lseq->left = zalloc(sizeof(*lseq->left) * lseq->left_count);
-    rseq->left_count = sequent->left_count;
-    rseq->left = zalloc(sizeof(*lseq->left) * lseq->left_count);
+    lseq->right = tree_node_inc(lseq->right);
+    rseq->right = tree_node_inc(rseq->right);
 
     for(int i = 0; i < sequent->left_count; i ++) {
         if(i != which) {
-            lseq->left[i] = sequent->left[i];
-            tree_node_inc(lseq->left[i]);
-            rseq->left[i] = sequent->left[i];
-            tree_node_inc(rseq->left[i]);
+            lseq->left[i] = tree_node_inc(sequent->left[i]);
+            rseq->left[i] = tree_node_inc(sequent->left[i]);
         }
         else {
             // add left child in place
-            lseq->left[i] = sequent->left[i]->child[0];
-            tree_node_inc(lseq->left[i]);
-            rseq->left[i] = sequent->left[i]->child[0];
-            tree_node_inc(rseq->left[i]);
+            lseq->left[i] = tree_node_inc(sequent->left[i]->child[0]);
+            rseq->left[i] = tree_node_inc(sequent->left[i]->child[1]);
         }
     }
 
@@ -234,24 +217,16 @@ static bool is_rule_disj_l(struct proof_sequent *sequent, int index) {
 static struct prover_rule_result rule_conj_r(struct proof_sequent *sequent,
     int __attribute__((unused)) which) {
 
-    struct proof_sequent *lseq = zalloc(sizeof(*lseq));
-    struct proof_sequent *rseq = zalloc(sizeof(*rseq));
+    struct proof_sequent *lseq = sequent_make(sequent->left_count);
+    struct proof_sequent *rseq = sequent_make(sequent->left_count);
 
-    lseq->right = sequent->right->child[0];
-    tree_node_inc(lseq->right);
-    rseq->right = sequent->right->child[1];
-    tree_node_inc(rseq->right);
-
-    lseq->left_count = rseq->left_count = sequent->left_count;
-    lseq->left = zalloc(sizeof(*lseq->left) * lseq->left_count);
-    rseq->left = zalloc(sizeof(*rseq->left) * rseq->left_count);
+    lseq->right = tree_node_inc(sequent->right->child[0]);
+    rseq->right = tree_node_inc(sequent->right->child[1]);
 
     // copy old sequent left children over
     for(int i = 0; i < sequent->left_count; i ++) {
-        lseq->left[i] = sequent->left[i];
-        tree_node_inc(lseq->left[i]);
-        rseq->left[i] = sequent->left[i];
-        tree_node_inc(rseq->left[i]);
+        lseq->left[i] = tree_node_inc(sequent->left[i]);
+        rseq->left[i] = tree_node_inc(sequent->left[i]);
     }
 
     return (struct prover_rule_result){lseq, rseq};
@@ -265,18 +240,13 @@ static bool is_rule_conj_r(struct proof_sequent *sequent) {
 static struct prover_rule_result rule_disjl_r(struct proof_sequent *sequent,
     int __attribute__((unused)) which) {
 
-    struct proof_sequent *nseq = zalloc(sizeof(*nseq));
+    struct proof_sequent *nseq = sequent_make(sequent->left_count);
 
-    nseq->right = sequent->right->child[0];
-    tree_node_inc(nseq->right);
-
-    nseq->left_count = sequent->left_count;
-    nseq->left = zalloc(sizeof(*nseq->left) * nseq->left_count);
+    nseq->right = tree_node_inc(sequent->right->child[0]);
 
     // copy old sequent left children over
     for(int i = 0; i < sequent->left_count; i ++) {
-        nseq->left[i] = sequent->left[i];
-        tree_node_inc(nseq->left[i]);
+        nseq->left[i] = tree_node_inc(sequent->left[i]);
     }
 
     return (struct prover_rule_result){nseq, NULL};
@@ -286,18 +256,13 @@ static struct prover_rule_result rule_disjl_r(struct proof_sequent *sequent,
 static struct prover_rule_result rule_disjr_r(struct proof_sequent *sequent,
     int __attribute__((unused)) which) {
 
-    struct proof_sequent *nseq = zalloc(sizeof(*nseq));
+    struct proof_sequent *nseq = sequent_make(sequent->left_count);
 
-    nseq->right = sequent->right->child[1];
-    tree_node_inc(nseq->right);
-
-    nseq->left_count = sequent->left_count;
-    nseq->left = zalloc(sizeof(*nseq->left) * nseq->left_count);
+    nseq->right = tree_node_inc(sequent->right->child[1]);
 
     // copy old sequent left children over
     for(int i = 0; i < sequent->left_count; i ++) {
-        nseq->left[i] = sequent->left[i];
-        tree_node_inc(nseq->left[i]);
+        nseq->left[i] = tree_node_inc(sequent->left[i]);
     }
 
     return (struct prover_rule_result){nseq, NULL};
@@ -311,23 +276,17 @@ static bool is_rule_disj_r(struct proof_sequent *sequent) {
 static struct prover_rule_result rule_impl_r(struct proof_sequent *sequent,
     int __attribute__((unused)) which) {
 
-    struct proof_sequent *nseq = zalloc(sizeof(*nseq));
+    struct proof_sequent *nseq = sequent_make(sequent->left_count + 1);
 
-    nseq->right = sequent->right->child[1];
-    tree_node_inc(nseq->right);
-
-    nseq->left_count = sequent->left_count + 1;
-    nseq->left = zalloc(sizeof(*nseq->left) * nseq->left_count);
+    nseq->right = tree_node_inc(sequent->right->child[1]);
 
     // copy old sequent left children over
     for(int i = 0; i < sequent->left_count; i ++) {
-        nseq->left[i] = sequent->left[i];
-        tree_node_inc(nseq->left[i]);
+        nseq->left[i] = tree_node_inc(sequent->left[i]);
     }
     // add new left child
 
-    nseq->left[nseq->left_count-1] = sequent->right->child[0];
-    tree_node_inc(nseq->left[nseq->left_count-1]);
+    nseq->left[nseq->left_count-1] = tree_node_inc(sequent->right->child[0]);
 
     return (struct prover_rule_result){nseq, NULL};
 }
@@ -340,23 +299,17 @@ static bool is_rule_impl_r(struct proof_sequent *sequent) {
 static struct prover_rule_result rule_cond1_l(struct proof_sequent *sequent,
     int which) {
 
-    struct proof_sequent *nseq = zalloc(sizeof(*nseq));
+    struct proof_sequent *nseq = sequent_make(sequent->left_count);
 
-    nseq->right = sequent->right;
-    tree_node_inc(nseq->right);
-
-    nseq->left_count = sequent->left_count;
-    nseq->left = zalloc(sizeof(*nseq->left) * nseq->left_count);
+    nseq->right = tree_node_inc(sequent->right);
 
     for(int i = 0; i < sequent->left_count; i ++) {
         if(i != which) {
-            nseq->left[i] = sequent->left[i];
-            tree_node_inc(nseq->left[i]);
+            nseq->left[i] = tree_node_inc(sequent->left[i]);
         }
         else {
             // add right child (the non-atomic one)
-            nseq->left[i] = sequent->left[i]->child[1];
-            tree_node_inc(nseq->left[i]);
+            nseq->left[i] = tree_node_inc(sequent->left[i]->child[1]);
         }
     }
 
@@ -383,45 +336,26 @@ static bool is_rule_cond1_l(struct proof_sequent *sequent, int index) {
 static struct prover_rule_result rule_cond2_l(struct proof_sequent *sequent,
     int which) {
 
-    struct proof_sequent *nseq = zalloc(sizeof(*nseq));
+    struct proof_sequent *nseq = sequent_make(sequent->left_count);
 
-    nseq->right = sequent->right;
-    tree_node_inc(nseq->right);
-
-    nseq->left_count = sequent->left_count;
-    nseq->left = zalloc(sizeof(*nseq->left) * nseq->left_count);
+    nseq->right = tree_node_inc(sequent->right);
 
     for(int i = 0; i < sequent->left_count; i ++) {
         if(i != which) {
-            nseq->left[i] = sequent->left[i];
-            tree_node_inc(nseq->left[i]);
+            nseq->left[i] = tree_node_inc(sequent->left[i]);
         }
         else {
             // turn (A&B)>C into A>(B>C)
 
-            struct tree_node *r = zalloc(sizeof(*r));
-            r->type = TREE_NODE_IMPLICATION;
-            r->child_count = 2;
-            r->refcount = 1;
-            r->child = zalloc(sizeof(struct tree_node *) * r->child_count);
-
+            struct tree_node *r = tree_node_make(TREE_NODE_IMPLICATION, 2);
             // A
-            r->child[0] = sequent->left[i]->child[0]->child[0];
-            tree_node_inc(r->child[0]);
-
+            r->child[0] = tree_node_inc(sequent->left[i]->child[0]->child[0]);
             // B>C
-            struct tree_node *s = zalloc(sizeof(*s));
+            struct tree_node *s = tree_node_make(TREE_NODE_IMPLICATION, 2);
             r->child[1] = s;
 
-            s->type = TREE_NODE_IMPLICATION;
-            s->child_count = 2;
-            s->refcount = 1;
-            s->child = zalloc(sizeof(struct tree_node *) * s->child_count);
-
-            s->child[0] = sequent->left[i]->child[0]->child[1];
-            tree_node_inc(s->child[0]);
-            s->child[1] = sequent->left[i]->child[1];
-            tree_node_inc(s->child[1]);
+            s->child[0] = tree_node_inc(sequent->left[i]->child[0]->child[1]);
+            s->child[1] = tree_node_inc(sequent->left[i]->child[1]);
 
             nseq->left[i] = r; // refcount = 1 already
         }
@@ -444,45 +378,28 @@ static bool is_rule_cond2_l(struct proof_sequent *sequent, int index) {
 static struct prover_rule_result rule_cond3_l(struct proof_sequent *sequent,
     int which) {
 
-    struct proof_sequent *nseq = zalloc(sizeof(*nseq));
+    struct proof_sequent *nseq = sequent_make(sequent->left_count + 1);
 
-    nseq->right = sequent->right;
-    tree_node_inc(nseq->right);
-
-    nseq->left_count = sequent->left_count + 1;
-    nseq->left = zalloc(sizeof(*nseq->left) * nseq->left_count);
+    nseq->right = tree_node_inc(sequent->right);
 
     for(int i = 0; i < sequent->left_count; i ++) {
         if(i != which) {
-            nseq->left[i] = sequent->left[i];
-            tree_node_inc(nseq->left[i]);
+            nseq->left[i] = tree_node_inc(sequent->left[i]);
         }
         else {
             // turn (A | B) > C into A>C,B>C
 
             // put A>C in place, append B>C
-            struct tree_node *f = zalloc(sizeof(*f));
-            f->type = TREE_NODE_IMPLICATION;
-            f->child_count = 2;
-            f->refcount = 1;
-            f->child = zalloc(sizeof(struct tree_node *) * f->child_count);
+            struct tree_node *f = tree_node_make(TREE_NODE_IMPLICATION, 2);
 
-            f->child[0] = sequent->left[i]->child[0]->child[0];
-            f->child[1] = sequent->left[i]->child[1];
-            tree_node_inc(f->child[0]);
-            tree_node_inc(f->child[1]);
+            f->child[0] = tree_node_inc(sequent->left[i]->child[0]->child[0]);
+            f->child[1] = tree_node_inc(sequent->left[i]->child[1]);
             nseq->left[i] = f;
 
-            struct tree_node *s = zalloc(sizeof(*s));
-            s->type = TREE_NODE_IMPLICATION;
-            s->child_count = 2;
-            s->refcount = 1;
-            s->child = zalloc(sizeof(struct tree_node *) * s->child_count);
+            struct tree_node *s = tree_node_make(TREE_NODE_IMPLICATION, 2);
 
-            s->child[0] = sequent->left[i]->child[0]->child[1];
-            s->child[1] = sequent->left[i]->child[1];
-            tree_node_inc(s->child[0]);
-            tree_node_inc(s->child[1]);
+            s->child[0] = tree_node_inc(sequent->left[i]->child[0]->child[1]);
+            s->child[1] = tree_node_inc(sequent->left[i]->child[1]);
             nseq->left[sequent->left_count] = s;
         }
     }
@@ -504,50 +421,33 @@ static bool is_rule_cond3_l(struct proof_sequent *sequent, int index) {
 static struct prover_rule_result rule_cond4_l(struct proof_sequent *sequent,
     int which) {
 
-    struct proof_sequent *lseq = zalloc(sizeof(*lseq));
-    struct proof_sequent *rseq = zalloc(sizeof(*rseq));
+    struct proof_sequent *lseq = sequent_make(sequent->left_count);
+    struct proof_sequent *rseq = sequent_make(sequent->left_count);
 
-    lseq->right = zalloc(sizeof(struct tree_node));
-    lseq->right->refcount = 1;
-    lseq->right->type = TREE_NODE_IMPLICATION;
-    lseq->right->child_count = 2;
-    lseq->right->child = zalloc(sizeof(struct tree_node *)*2);
-    lseq->right->child[0] = sequent->left[which]->child[0]->child[0];
-    lseq->right->child[1] = sequent->left[which]->child[0]->child[1];
+    lseq->right = tree_node_make(TREE_NODE_IMPLICATION, 2);
+
+    lseq->right->child[0] =
+        tree_node_inc(sequent->left[which]->child[0]->child[0]);
+    lseq->right->child[1] =
+        tree_node_inc(sequent->left[which]->child[0]->child[1]);
     tree_node_inc(lseq->right->child[0]);
     tree_node_inc(lseq->right->child[1]);
 
-    rseq->right = sequent->right;
-    tree_node_inc(rseq->right);
-
-    lseq->left_count = sequent->left_count;
-    lseq->left = zalloc(sizeof(*lseq->left) * lseq->left_count);
-    rseq->left_count = sequent->left_count;
-    rseq->left = zalloc(sizeof(*rseq->left) * rseq->left_count);
+    rseq->right = tree_node_inc(sequent->right);
 
     // fill lseq->left
     for(int i = 0; i < sequent->left_count; i ++) {
         if(i != which) {
-            lseq->left[i] = sequent->left[i];
-            tree_node_inc(lseq->left[i]);
+            lseq->left[i] = tree_node_inc(sequent->left[i]);
 
-            rseq->left[i] = sequent->left[i];
-            tree_node_inc(rseq->left[i]);
+            rseq->left[i] = tree_node_inc(sequent->left[i]);
         }
         else {
             // (left) replace (A>B)>C with B>C
-            struct tree_node *n = zalloc(sizeof(*n));
-            n->type = TREE_NODE_IMPLICATION;
-            n->child_count = 2;
-            n->child = zalloc(sizeof(struct tree_node *) * n->child_count);
+            struct tree_node *n = tree_node_make(TREE_NODE_IMPLICATION, 2);
+            n->child[0] = tree_node_inc(sequent->left[i]->child[0]->child[1]);
+            n->child[1] = tree_node_inc(sequent->left[i]->child[1]);
 
-            n->child[0] = sequent->left[i]->child[0]->child[1];
-            n->child[1] = sequent->left[i]->child[1];
-
-            tree_node_inc(n->child[0]);
-            tree_node_inc(n->child[1]);
-
-            n->refcount = 1;
             lseq->left[i] = n;
 
             // (right) pull out C from (A>B)>C

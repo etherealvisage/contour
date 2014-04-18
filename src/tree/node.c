@@ -19,6 +19,17 @@ static void tree_node_fmt_helper(struct strbuild *str, struct tree_node *node);
 static void tree_node_fmt_latex_helper(struct strbuild *str,
     struct tree_node *node);
 
+struct tree_node *tree_node_make(enum tree_node_type type, int child_count) {
+    struct tree_node *ret = zalloc(sizeof(*ret));
+
+    ret->refcount = 1;
+    ret->type = type;
+    ret->child_count = child_count;
+    ret->child = zalloc(sizeof(struct tree_node *) * child_count);
+
+    return ret;
+}
+
 char *tree_node_dump(char *buffer, struct tree_node *node) {
     return tree_node_dump_helper(buffer, node, 0);
 }
@@ -169,8 +180,9 @@ struct tree_node *tree_node_dup(struct tree_node *node) {
     return ret;
 }
 
-void tree_node_inc(struct tree_node *node) {
+struct tree_node *tree_node_inc(struct tree_node *node) {
     node->refcount ++;
+    return node;
 }
 
 /// refcountint: decrement # of references

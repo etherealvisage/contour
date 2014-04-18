@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "log/log.h"
 
 #include "parser/parser.h"
@@ -23,10 +24,7 @@ int main(int __attribute__((unused)) argc,
     struct proof_sequent *proof = prove(parse_result);
     if(proof) {
         latex_proof(proof);
-        for(int i = 0; i < proof->left_count; i ++) tree_node_dec(proof->left[i]);
-        tree_node_dec(proof->right);
-        free(proof);
-        tree_node_dec(parse_result);
+        sequent_destroy(proof);
     }
     else {
         printf("Unprovable!\n");

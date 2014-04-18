@@ -12,4 +12,7 @@ struct proof_sequent {
     const char *tag, *latex_tag;
 };
 
+struct proof_sequent *sequent_make(int left_count);
+void sequent_destroy(struct proof_sequent *sequent);
+
 #endif
