@@ -13,9 +13,8 @@ static void latex_proof_helper(struct proof_sequent *sequent);
 static int dfs_count = 0;
 
 struct proof_sequent *prove(struct tree_node *expression) {
-    struct proof_sequent *initial_sequent = zalloc(sizeof(*initial_sequent));
+    struct proof_sequent *initial_sequent = sequent_make(0);
 
-    initial_sequent->left_count = 0;
     initial_sequent->right = expression;
 
     dfs_count = 0;
@@ -28,7 +27,10 @@ struct proof_sequent *prove(struct tree_node *expression) {
         return initial_sequent;
     }
     // XXX: leak
-    else return NULL;
+    else {
+        sequent_destroy(initial_sequent);
+        return NULL;
+    }
 }
 
 static bool prove_dfs(struct proof_sequent *sequent) {
@@ -64,12 +66,16 @@ static bool prove_dfs(struct proof_sequent *sequent) {
             sequent->sright = result.right;
             sequent->tag = app->name;
             sequent->latex_tag = app->latex_name;
+
+            free(results);
             return true;
         }
         else {
             sequent->tag = "impossible";
             sequent->latex_tag = "impossible";
-            // XXX: leak -- free memory + do refcounting etc.
+
+            sequent_destroy(result.left);
+            sequent_destroy(result.right);
             if(any_invertible) break;
         }
     }

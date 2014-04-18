@@ -27,7 +27,7 @@ int main(int __attribute__((unused)) argc,
         sequent_destroy(proof);
     }
     else {
-        printf("Unprovable!\n");
+        contour_log_info("Unprovable!");
     }
 
     free(buffer);

@@ -430,8 +430,6 @@ static struct prover_rule_result rule_cond4_l(struct proof_sequent *sequent,
         tree_node_inc(sequent->left[which]->child[0]->child[0]);
     lseq->right->child[1] =
         tree_node_inc(sequent->left[which]->child[0]->child[1]);
-    tree_node_inc(lseq->right->child[0]);
-    tree_node_inc(lseq->right->child[1]);
 
     rseq->right = tree_node_inc(sequent->right);
 
@@ -451,8 +449,7 @@ static struct prover_rule_result rule_cond4_l(struct proof_sequent *sequent,
             lseq->left[i] = n;
 
             // (right) pull out C from (A>B)>C
-            rseq->left[i] = sequent->left[i]->child[1];
-            tree_node_inc(rseq->left[i]);
+            rseq->left[i] = tree_node_inc(sequent->left[i]->child[1]);
         }
     }
 

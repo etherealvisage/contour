@@ -18,7 +18,10 @@ void sequent_destroy(struct proof_sequent *sequent) {
     for(int i = 0; i < sequent->left_count; i ++) {
         tree_node_dec(sequent->left[i]);
     }
+    free(sequent->left);
 
     if(sequent->sleft) sequent_destroy(sequent->sleft);
     if(sequent->sright) sequent_destroy(sequent->sright);
+
+    free(sequent);
 }
