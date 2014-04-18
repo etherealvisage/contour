@@ -97,8 +97,6 @@ static bool prove_dfs_helper(struct proof_sequent *sequent,
         }
     }
 
-    contour_log_info("FALSE");
-
     return false;
 }
 
