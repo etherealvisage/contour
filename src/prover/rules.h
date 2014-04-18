@@ -17,6 +17,7 @@ struct prover_rule_application {
     int index;
     const char *name;
     const char *latex_name;
+    bool invertible;
 };
 
 struct prover_rule_application *prover_rules_find(

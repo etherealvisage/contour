@@ -23,10 +23,16 @@ int main(int __attribute__((unused)) argc,
     struct proof_sequent *proof = prove(parse_result);
     if(proof) {
         latex_proof(proof);
+        for(int i = 0; i < proof->left_count; i ++) tree_node_dec(proof->left[i]);
+        tree_node_dec(proof->right);
+        free(proof);
+        tree_node_dec(parse_result);
     }
     else {
         printf("Unprovable!\n");
     }
+
+    free(buffer);
 
     return 0;
 }

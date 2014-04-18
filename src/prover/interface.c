@@ -45,8 +45,16 @@ static bool prove_dfs(struct proof_sequent *sequent) {
         return false;
     }
 
+    bool any_invertible = false;
+    for(int i = 0; i < count; i ++) {
+        if(results[i].invertible) { any_invertible = true; break; }
+    }
+
+
     for(int i = 0; i < count; i ++) {
         struct prover_rule_application *app = results + i;
+
+        if(!app->invertible && any_invertible) continue;
 
         struct prover_rule_result result = app->rule(sequent, app->index);
 
@@ -62,8 +70,11 @@ static bool prove_dfs(struct proof_sequent *sequent) {
             sequent->tag = "impossible";
             sequent->latex_tag = "impossible";
             // XXX: leak -- free memory + do refcounting etc.
+            if(any_invertible) break;
         }
     }
+
+    free(results);
 
     return false;
 }
@@ -119,10 +130,10 @@ static void latex_proof_helper(struct proof_sequent *sequent) {
     
     char *r = tree_node_fmt_latex(sequent->right);
 
-    const char *type = "        \\Axiom";
+    const char *type = "        \\UnaryInf";
     if(sequent->sright) type = "        \\BinaryInf";
-    else if(sequent->sleft) type = "        \\UnaryInf";
 
+    if(!sequent->sright && !sequent->sleft) contour_log_info("    \\Axiom$ $");
     contour_log_info("    \\RightLabel{%s}", sequent->latex_tag);
     contour_log_info("%s$%s \\fCenter %s$",
         type, buffer, r);
