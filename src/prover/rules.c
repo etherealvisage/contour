@@ -191,8 +191,8 @@ static struct prover_rule_result rule_disj_l(struct proof_sequent *sequent,
     struct proof_sequent *lseq = sequent_make(sequent->left_count);
     struct proof_sequent *rseq = sequent_make(sequent->left_count);
 
-    lseq->right = tree_node_inc(lseq->right);
-    rseq->right = tree_node_inc(rseq->right);
+    lseq->right = tree_node_inc(sequent->right);
+    rseq->right = tree_node_inc(sequent->right);
 
     for(int i = 0; i < sequent->left_count; i ++) {
         if(i != which) {
