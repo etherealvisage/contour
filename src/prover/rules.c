@@ -70,8 +70,8 @@ static struct prover_rule_result rule_cond4_l(struct proof_sequent *sequent,
 static bool is_rule_cond4_l(struct proof_sequent *sequent, int index);
 
 struct lrule lrules[] = {
-    {rule_axiom, is_rule_axiom, "Axiom", "Axiom", false},
-    {rule_absurd, is_rule_absurd, "Absurdity", "Absurd", false},
+    {rule_axiom, is_rule_axiom, "Axiom", "Axiom", true},
+    {rule_absurd, is_rule_absurd, "Absurdity", "Absurd", true},
     {rule_conj_l, is_rule_conj_l, "&L", "$\\wedge \\Rightarrow$", true},
     {rule_disj_l, is_rule_disj_l, "|L", "$\\vee \\Rightarrow$", true},
 
@@ -84,8 +84,8 @@ const int lrules_count = 8;
 
 struct rrule rrules[] = {
     {rule_conj_r, is_rule_conj_r, "R&", "$\\Rightarrow\\wedge$", true},
-    {rule_disjl_r, is_rule_disj_r, "R|1", "$\\Rightarrow\\vee$", true},
-    {rule_disjr_r, is_rule_disj_r, "R|2", "$\\Rightarrow\\vee$", true},
+    {rule_disjl_r, is_rule_disj_r, "R|1", "$\\Rightarrow\\vee$", false},
+    {rule_disjr_r, is_rule_disj_r, "R|2", "$\\Rightarrow\\vee$", false},
     {rule_impl_r, is_rule_impl_r, "R>", "$\\Rightarrow\\supset$", false}
 };
 const int rrules_count = 4;
@@ -96,8 +96,8 @@ struct prover_rule_application *prover_rules_find(
     struct prover_rule_application *applications = NULL;
     *count = 0;
 
-    for(int index = 0; index < sequent->left_count; index ++) {
-        for(int j = 0; j < lrules_count; j ++) {
+    for(int j = 0; j < lrules_count; j ++) {
+        for(int index = 0; index < sequent->left_count; index ++) {
             if(!lrules[j].is(sequent, index)) continue;
 
             applications = realloc(applications,

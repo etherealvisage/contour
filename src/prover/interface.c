@@ -6,6 +6,9 @@
 #include "log/log.h"
 
 static bool prove_dfs(struct proof_sequent *sequent);
+static bool prove_dfs_helper(struct proof_sequent *sequent,
+    struct prover_rule_application *application, int application_count,
+    bool inv);
 
 static void dump_proof_helper(struct proof_sequent *sequent, int indent);
 static void latex_proof_helper(struct proof_sequent *sequent);
@@ -51,43 +54,50 @@ static bool prove_dfs(struct proof_sequent *sequent) {
     for(int i = 0; i < count; i ++) {
         if(results[i].invertible) { invmode = true; break; }
     }
-    contour_log_info("invmode: %s", invmode?"yes":"no");
 
-    for(int mode = 0; mode < 2; mode ++) {
-        if(mode == 1 && !invmode) break;
-        else if(mode == 1) invmode = false;
+    bool retval = false;
+    if(invmode && prove_dfs_helper(sequent, results, count, true)) {
+        retval = true;
+    }
+    else if(prove_dfs_helper(sequent, results, count, false)) retval = true;
 
-        for(int i = 0; i < count; i ++) {
-            struct prover_rule_application *app = results + i;
+    free(results);
 
-            if(app->invertible != invmode) continue;
-            if(!invmode) contour_log_info("applying non-invertible rule");
+    return retval;
+}
 
-            struct prover_rule_result result = app->rule(sequent, app->index);
+static bool prove_dfs_helper(struct proof_sequent *sequent,
+    struct prover_rule_application *application, int application_count,
+    bool inv) {
 
-            // do the right first, it can be smaller.
-            if(prove_dfs(result.right) && prove_dfs(result.left)) {
-                sequent->sleft = result.left;
-                sequent->sright = result.right;
-                sequent->tag = app->name;
-                sequent->latex_tag = app->latex_name;
+    for(int i = 0; i < application_count; i ++) {
+        struct prover_rule_application *app = application + i;
 
-                free(results);
-                return true;
-            }
-            else {
-                sequent->tag = "impossible";
-                sequent->latex_tag = "impossible";
+        if(app->invertible != inv) continue;
 
-                sequent_destroy(result.left);
-                sequent_destroy(result.right);
+        struct prover_rule_result result = app->rule(sequent, app->index);
 
-                if(invmode) break;
-            }
+        // do the right first, it can be smaller.
+        if(prove_dfs(result.right) && prove_dfs(result.left)) {
+            sequent->sleft = result.left;
+            sequent->sright = result.right;
+            sequent->tag = app->name;
+            sequent->latex_tag = app->latex_name;
+
+            return true;
+        }
+        else {
+            sequent->tag = "impossible";
+            sequent->latex_tag = "impossible";
+
+            sequent_destroy(result.left);
+            sequent_destroy(result.right);
+
+            if(inv) break;
         }
     }
 
-    free(results);
+    contour_log_info("FALSE");
 
     return false;
 }
@@ -132,7 +142,7 @@ static void latex_proof_helper(struct proof_sequent *sequent) {
     if(sequent->sleft) latex_proof_helper(sequent->sleft);
     if(sequent->sright) latex_proof_helper(sequent->sright);
 
-    char buffer[1024];
+    char buffer[4096];
     buffer[0] = 0;
     for(int i = 0; i < sequent->left_count; i ++) {
         char *p = tree_node_fmt_latex(sequent->left[i]);
