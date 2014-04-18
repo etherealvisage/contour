@@ -47,36 +47,43 @@ static bool prove_dfs(struct proof_sequent *sequent) {
         return false;
     }
 
-    bool any_invertible = false;
+    bool invmode = false;
     for(int i = 0; i < count; i ++) {
-        if(results[i].invertible) { any_invertible = true; break; }
+        if(results[i].invertible) { invmode = true; break; }
     }
+    contour_log_info("invmode: %s", invmode?"yes":"no");
 
+    for(int mode = 0; mode < 2; mode ++) {
+        if(mode == 1 && !invmode) break;
+        else if(mode == 1) invmode = false;
 
-    for(int i = 0; i < count; i ++) {
-        struct prover_rule_application *app = results + i;
+        for(int i = 0; i < count; i ++) {
+            struct prover_rule_application *app = results + i;
 
-        if(!app->invertible && any_invertible) continue;
+            if(app->invertible != invmode) continue;
+            if(!invmode) contour_log_info("applying non-invertible rule");
 
-        struct prover_rule_result result = app->rule(sequent, app->index);
+            struct prover_rule_result result = app->rule(sequent, app->index);
 
-        // do the right first, it can be smaller.
-        if(prove_dfs(result.right) && prove_dfs(result.left)) {
-            sequent->sleft = result.left;
-            sequent->sright = result.right;
-            sequent->tag = app->name;
-            sequent->latex_tag = app->latex_name;
+            // do the right first, it can be smaller.
+            if(prove_dfs(result.right) && prove_dfs(result.left)) {
+                sequent->sleft = result.left;
+                sequent->sright = result.right;
+                sequent->tag = app->name;
+                sequent->latex_tag = app->latex_name;
 
-            free(results);
-            return true;
-        }
-        else {
-            sequent->tag = "impossible";
-            sequent->latex_tag = "impossible";
+                free(results);
+                return true;
+            }
+            else {
+                sequent->tag = "impossible";
+                sequent->latex_tag = "impossible";
 
-            sequent_destroy(result.left);
-            sequent_destroy(result.right);
-            if(any_invertible) break;
+                sequent_destroy(result.left);
+                sequent_destroy(result.right);
+
+                if(invmode) break;
+            }
         }
     }
 
